@@ -20,9 +20,62 @@ import {
 } from "./services/runtime";
 import "./App.css";
 
+/** Black, cream and amber Monaco theme, colours sampled from ignytion.io. */
+function defineIgnytionTheme(m: typeof monaco) {
+  m.editor.defineTheme("ignytion", {
+    base: "vs-dark",
+    inherit: true,
+    rules: [
+      { token: "", foreground: "FFF9F3" },
+      { token: "comment", foreground: "7C776F", fontStyle: "italic" },
+      { token: "keyword", foreground: "EF9529", fontStyle: "bold" },
+      { token: "keyword.flow", foreground: "EF9529", fontStyle: "bold" },
+      { token: "string", foreground: "F5BD7A" },
+      { token: "string.escape", foreground: "FFD9A8" },
+      { token: "number", foreground: "FFD9A8" },
+      { token: "number.float", foreground: "FFD9A8" },
+      { token: "number.hex", foreground: "FFD9A8" },
+      { token: "identifier", foreground: "FFF9F3" },
+      { token: "type", foreground: "FFF9F3" },
+      { token: "type.identifier", foreground: "FFF9F3" },
+      { token: "predefined", foreground: "F5BD7A" },
+      { token: "tag", foreground: "F5BD7A" },
+      { token: "operator", foreground: "A9A49C" },
+      { token: "delimiter", foreground: "A9A49C" },
+      { token: "delimiter.bracket", foreground: "A9A49C" },
+    ],
+    colors: {
+      "editor.background": "#0C0B0C",
+      "editor.foreground": "#FFF9F3",
+      "editorGutter.background": "#0C0B0C",
+      "editorLineNumber.foreground": "#4D4944",
+      "editorLineNumber.activeForeground": "#EF9529",
+      "editor.lineHighlightBackground": "#151315",
+      "editor.lineHighlightBorder": "#00000000",
+      "editor.selectionBackground": "#EF952940",
+      "editor.inactiveSelectionBackground": "#EF952922",
+      "editor.selectionHighlightBackground": "#EF952922",
+      "editorCursor.foreground": "#EF9529",
+      "editorWhitespace.foreground": "#2A2829",
+      "editorIndentGuide.background1": "#1D1B1C",
+      "editorIndentGuide.activeBackground1": "#3A3633",
+      "editorBracketMatch.background": "#EF952926",
+      "editorBracketMatch.border": "#EF9529",
+      "editorWidget.background": "#111012",
+      "editorWidget.border": "#2A2829",
+      "editorSuggestWidget.background": "#111012",
+      "editorSuggestWidget.selectedBackground": "#EF952933",
+      "scrollbarSlider.background": "#2A282999",
+      "scrollbarSlider.hoverBackground": "#EF952980",
+      "scrollbarSlider.activeBackground": "#EF9529",
+    },
+  });
+}
+
 // Bundle Monaco locally so the editor works offline (no CDN fetch).
 self.MonacoEnvironment = { getWorker: () => new editorWorker() };
 loader.config({ monaco });
+defineIgnytionTheme(monaco);
 
 const STARTER = `# New Ignytion script
 name = "Ignytion"
@@ -92,6 +145,13 @@ export default function App() {
       const next = prev.concat(batch);
       return next.length > MAX_UI_LINES ? next.slice(next.length - MAX_UI_LINES) : next;
     });
+  }, []);
+
+  // Keep the editor dark even after a hot reload: an editor created earlier
+  // may predate the theme, and Monaco silently falls back to its light theme.
+  useEffect(() => {
+    defineIgnytionTheme(monaco);
+    monaco.editor.setTheme("ignytion");
   }, []);
 
   useEffect(() => {
@@ -314,7 +374,8 @@ export default function App() {
     <div className="app">
       <header className="toolbar">
         <div className="brand">
-          IGNYTION <span className="amber">io</span>
+          <span>Python <span className="amber">Editor</span></span>
+          <span className="sub">for Ignytion Crucible</span>
         </div>
         <button onClick={() => void newFile()} disabled={running}>New</button>
         <button onClick={() => void openFile()} disabled={running}>Open</button>
@@ -355,11 +416,11 @@ export default function App() {
             <Editor
               height="100%"
               language="python"
-              theme="vs-dark"
+              theme="ignytion"
               value={content}
               onMount={onEditorMount}
               onChange={(v) => setContent(v ?? "")}
-              options={{ lineNumbers: "on", minimap: { enabled: false }, fontSize: 14, automaticLayout: true }}
+              options={{ lineNumbers: "on", minimap: { enabled: false }, fontSize: 14, lineHeight: 23, fontFamily: '"JetBrains Mono", "Cascadia Mono", Consolas, monospace', cursorBlinking: "smooth", renderLineHighlight: "line", automaticLayout: true, padding: { top: 14 } }}
             />
           </div>
 
